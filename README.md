@@ -4,6 +4,8 @@
 
 * npm run build
 
+* node devserver.js  //开发
+
 * node app.js
 
 * http://localhost:3000/

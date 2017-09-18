@@ -1,4 +1,5 @@
 const Vue = require("vue");
+var decache = require("decache");
 // koa
 var koa = require("koa");
 var server = new koa();
@@ -16,12 +17,16 @@ server.use(router.routes()).use(router.allowedMethods());
 const renderer = require("vue-server-renderer").createRenderer();
 
 // Server-Side Bundle File
-const createApp = require("./dist/bundle.server.js")["default"];
+// var createApp = require("./dist/bundle.server.js")["default"];
 
 // Client-Side Bundle File
 const clientBundleFileUrl = './bundle.client.js';
 
 router.get("*", function*(next) {
+    // 清除require缓存
+    decache("./dist/bundle.server.js");
+    // Server-Side Bundle File
+    var createApp = require("./dist/bundle.server.js")["default"];
     let ctx = this;
     const context = { url: ctx.url };
 
@@ -84,3 +89,93 @@ process.on('unhandledRejection', (reason, p) => {
     console.log("Unhandled Rejection at: Promise ", p, " reason: ", reason);
     // application specific logging, throwing an error, or other logic here
 });
+
+const webpack = require('webpack');
+const serverConfig = require('./build/webpack.server.js');
+const clientConfig = require('./build/webpack.client.js');
+/**
+ * 初始化服务端编译
+ *
+ * @return {Promise}
+ */
+function initServerCompilePromise() {
+    const serverCompiler = webpack(serverConfig);
+    const clientCompiler = webpack(clientConfig);
+    return new Promise((resolve, reject) => {
+        serverCompiler.run((err, stats) => {
+            stats = stats.toJson();
+            stats.errors.forEach((error) => {
+                console.error(error);
+            });
+            stats.warnings.forEach((error) => {
+                console.warn(error);
+            });
+            if (err) {
+                reject(err);
+                return;
+            }
+            console.log('server compile done.');
+            watchServerCompile(serverCompiler);
+            resolve('done');
+        });
+        clientCompiler.run((err, stats) => {
+            stats = stats.toJson();
+            stats.errors.forEach((error) => {
+                console.error(error);
+            });
+            stats.warnings.forEach((error) => {
+                console.warn(error);
+            });
+            if (err) {
+                reject(err);
+                return;
+            }
+            console.log('clent compile done.');
+            watchClientCompile(clientCompiler);
+            resolve('done');
+        });
+    });
+}
+
+/**
+ * 开启server端的watch监听
+ *
+ * @param {Object} serverCompiler - 对应的webpack编译器
+ */
+function watchServerCompile(serverCompiler) {
+    serverCompiler.watch({}, (err, stats) => {
+        stats = stats.toJson();
+        stats.errors.forEach((error) => {
+            console.error(error);
+        });
+        stats.warnings.forEach((error) => {
+            console.warn(error);
+        });
+        if (err) {
+            throw err;
+        }
+    });
+}
+
+/**
+ * 开启client端的watch监听
+ *
+ * @param {Object} clientCompiler - 对应的webpack编译器
+ */
+function watchClientCompile(clientCompiler) {
+    clientCompiler.watch({}, (err, stats) => {
+        stats = stats.toJson();
+        stats.errors.forEach((error) => {
+            console.error(error);
+        });
+        stats.warnings.forEach((error) => {
+            console.warn(error);
+        });
+        if (err) {
+            throw err;
+        }
+    });
+}
+
+// webpack node api run/watch 文档：https://doc.webpack-china.org/api/node#compiler-compiler-instance-
+initServerCompilePromise();
