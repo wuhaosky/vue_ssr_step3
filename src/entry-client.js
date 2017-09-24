@@ -3,11 +3,13 @@
 require('es6-promise').polyfill();
 import { createApp } from "./index.js";
 
-let { app, store } = createApp();
+let { app, store, router } = createApp();
 
 if (window.__INITIAL_STATE__) {
     // 
     store.replaceState(window.__INITIAL_STATE__);
 }
 
-app.$mount("#app");
+router.onReady(() => {
+    app.$mount("#app");
+})

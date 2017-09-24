@@ -23,7 +23,6 @@ export default {
         data: {}
     },
     mounted() {
-        this.$store.dispatch('fetchData');
     },
     methods: {
 

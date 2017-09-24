@@ -3,6 +3,7 @@
 // Vue和Vuex
 import Vue from "vue";
 import Vuex from "vuex";
+import axios from "axios";
 // 使用vuex
 Vue.use(Vuex);
 
@@ -16,8 +17,15 @@ let mutations = {
 
 let actions = {
     fetchData(context) {
-        fetchAjaxData(context.state.baseargs, function(ajaxData) {
-            context.commit("fetchData", ajaxData);
+        return axios({
+            method: "get",
+            url: "http://localhost:3000/api/getList"
+        }).then(function(response) {
+            if (response.status == 200) {
+                context.commit("fetchData", response.data.msg);
+            }
+        }).catch(function (error) {
+            console.log(error);
         });
     }
 };

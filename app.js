@@ -21,6 +21,21 @@ const createApp = require("./dist/bundle.server.js")["default"];
 // Client-Side Bundle File
 const clientBundleFileUrl = './bundle.client.js';
 
+router.get("/api/getList", function *(next) {
+    let ctx = this;
+    ctx.status = 200;
+    ctx.type = 'application/json';
+    ctx.body = {
+        code: 200,
+        msg: [
+            {'title': "华尔街英语"},
+            {'title': "牛班音乐学校"},
+            {'title': "果子油画"},
+            {'title': "猫头鹰钢琴"}
+        ]
+    };
+})
+
 router.get("*", function*(next) {
     let ctx = this;
     const context = { url: ctx.url };

@@ -22,12 +22,31 @@ const renderer = require("vue-server-renderer").createRenderer();
 // Client-Side Bundle File
 const clientBundleFileUrl = './bundle.client.js';
 
+router.get("/api/getList", function *(next) {
+    let ctx = this;
+    ctx.status = 200;
+    ctx.type = 'application/json';
+    ctx.body = {
+        code: 200,
+        msg: [
+            {'title': "华尔街英语"},
+            {'title': "牛班音乐学校"},
+            {'title': "果子油画"},
+            {'title': "猫头鹰钢琴"}
+        ]
+    };
+})
+
 router.get("*", function*(next) {
+    var ctx = this;
+    if (ctx.url.indexOf("es6-promise.map") > -1) {
+        return;
+    }
     // 清除require缓存
     decache("./dist/bundle.server.js");
     // Server-Side Bundle File
     var createApp = require("./dist/bundle.server.js")["default"];
-    let ctx = this;
+
     const context = { url: ctx.url };
 
     yield createApp(context).then(app => {

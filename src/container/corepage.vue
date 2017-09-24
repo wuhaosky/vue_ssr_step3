@@ -22,6 +22,9 @@ export default {
     props: {
         data: {}
     },
+    asyncData ({ store }) {
+        return store.dispatch('fetchData')
+    },
     mounted() {
     },
     methods: {
